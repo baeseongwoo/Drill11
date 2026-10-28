@@ -64,14 +64,7 @@ class Run:
     def do(self, frame_time):
         self.boy.frame = (self.boy.frame + RUN_FPS * frame_time) % 8
         self.boy.x += self.boy.dir * RUN_SPEED * frame_time
-        self.boy.x = max(HALF_WIDTH, min(self.boy.x, get_canvas_width() - HALF_WIDTH))
-
-        # 좌우 벽에 닿자마자 반대 방향으로 전환 (바라보는 방향도 같은 프레임에 바꿈)
-        boy = self.boy
-        if (boy.x <= HALF_WIDTH and boy.dir == -1) or \
-                (boy.x >= get_canvas_width() - HALF_WIDTH and boy.dir == 1):
-            boy.dir = -boy.dir
-            boy.face_dir = boy.dir
+        self.boy.x = max(HALF_WIDTH, min(self.boy.x, get_canvas_width() - HALF_WIDTH))  # 벽에서는 멈춘다
 
     def draw(self):
         boy = self.boy
