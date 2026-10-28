@@ -1,8 +1,9 @@
-from pico2d import load_image, get_time, SDL_KEYDOWN, SDL_KEYUP, SDLK_LEFT, SDLK_RIGHT
+from pico2d import load_image, get_time, get_canvas_width, SDL_KEYDOWN, SDL_KEYUP, SDLK_LEFT, SDLK_RIGHT
 
 from state_machine import StateMachine
 
 RUN_SPEED = 300  # 달리기 속도 (px/초)
+HALF_WIDTH = 50  # 소년 칸 폭의 절반 (화면 밖으로 안 나가게 할 때 사용)
 IDLE_FPS = 8     # 서 있기 애니메이션: 초당 8장
 RUN_FPS = 12     # 달리기 애니메이션: 초당 12장
 MAX_FRAME_TIME = 0.1  # 창을 끄는 등 루프가 멈췄다 돌아와도 한 번에 크게 건너뛰지 않게
@@ -52,6 +53,7 @@ class Run:
     def do(self, frame_time):
         self.boy.frame = (self.boy.frame + RUN_FPS * frame_time) % 8
         self.boy.x += self.boy.dir * RUN_SPEED * frame_time
+        self.boy.x = max(HALF_WIDTH, min(self.boy.x, get_canvas_width() - HALF_WIDTH))
 
     def draw(self):
         boy = self.boy
