@@ -33,6 +33,26 @@ class Idle:
             boy.image.clip_draw(boy.frame * 100, 200, 100, 100, boy.x, boy.y)
 
 
+class Run:
+    def __init__(self, boy):
+        self.boy = boy
+
+    def enter(self, e):
+        self.boy.dir = e[1]  # 이벤트에 담긴 방향으로 달린다
+        self.boy.face_dir = e[1]
+
+    def exit(self, e):
+        pass
+
+    def do(self):
+        self.boy.frame = (self.boy.frame + 1) % 8
+        self.boy.x += self.boy.dir * 5
+
+    def draw(self):
+        boy = self.boy
+        boy.image.clip_draw(boy.frame * 100, 100, 100, 100, boy.x, boy.y)
+
+
 class Boy:
     image = None  # 클래스 변수: 소년이 여러 명이어도 시트는 한 번만 로드
 
@@ -48,8 +68,10 @@ class Boy:
 
         # 상태 객체를 만들고, 상태 머신은 IDLE에서 시작
         self.IDLE = Idle(self)
+        self.RUN = Run(self)
         self.state_machine = StateMachine(self.IDLE, {
-            self.IDLE: {},
+            self.IDLE: {dir_on: self.RUN},
+            self.RUN: {},
         })
 
     # 키 입력을 방향으로 바꿔 상태 머신에 ('DIR', dir) 이벤트로 넘긴다
