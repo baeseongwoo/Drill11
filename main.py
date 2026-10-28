@@ -1,6 +1,7 @@
 from pico2d import *
 
 import game_world
+from boy import Boy
 from grass import Grass  # grass는 모듈 이름, Grass는 그 안의 클래스
 
 
@@ -16,10 +17,15 @@ def handle_events():
 
 
 def reset_world():
+    global boy
+
     game_world.world.clear()
 
     grass = Grass()
     game_world.add_object(grass)
+
+    boy = Boy()
+    game_world.add_object(boy)
 
 
 running = True

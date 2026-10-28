@@ -1,0 +1,15 @@
+from pico2d import load_image
+
+
+class Boy:
+    def __init__(self):
+        self.x, self.y = 400, 90
+        self.frame = 0
+        self.face_dir = 1  # 바라보는 방향: 1 오른쪽, -1 왼쪽
+        self.image = load_image('animation_sheet.png')
+
+    def update(self):
+        pass
+
+    def draw(self):
+        self.image.clip_draw(self.frame * 100, 300, 100, 100, self.x, self.y)
