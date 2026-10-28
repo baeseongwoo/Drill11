@@ -37,7 +37,9 @@ class Boy:
 
         # 상태 객체를 만들고, 상태 머신은 IDLE에서 시작
         self.IDLE = Idle(self)
-        self.state_machine = StateMachine(self.IDLE)
+        self.state_machine = StateMachine(self.IDLE, {
+            self.IDLE: {},
+        })
 
     def handle_event(self, event):
         pass
