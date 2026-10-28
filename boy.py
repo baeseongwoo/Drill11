@@ -50,7 +50,10 @@ class Run:
 
     def draw(self):
         boy = self.boy
-        boy.image.clip_draw(boy.frame * 100, 100, 100, 100, boy.x, boy.y)
+        if boy.face_dir == 1:  # 오른쪽 달리기 줄 100, 왼쪽 달리기 줄 0
+            boy.image.clip_draw(boy.frame * 100, 100, 100, 100, boy.x, boy.y)
+        else:
+            boy.image.clip_draw(boy.frame * 100, 0, 100, 100, boy.x, boy.y)
 
 
 class Boy:
