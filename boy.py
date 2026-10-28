@@ -71,7 +71,7 @@ class Boy:
         self.RUN = Run(self)
         self.state_machine = StateMachine(self.IDLE, {
             self.IDLE: {dir_on: self.RUN},
-            self.RUN: {},
+            self.RUN: {dir_off: self.IDLE},
         })
 
     # 키 입력을 방향으로 바꿔 상태 머신에 ('DIR', dir) 이벤트로 넘긴다
