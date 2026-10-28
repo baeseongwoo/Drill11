@@ -39,6 +39,9 @@ class Boy:
         self.IDLE = Idle(self)
         self.state_machine = StateMachine(self.IDLE)
 
+    def handle_event(self, event):
+        pass
+
     def update(self):
         self.state_machine.update()
 
