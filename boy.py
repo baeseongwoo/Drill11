@@ -5,6 +5,7 @@ from state_machine import StateMachine
 RUN_SPEED = 300  # 달리기 속도 (px/초)
 IDLE_FPS = 8     # 서 있기 애니메이션: 초당 8장
 RUN_FPS = 12     # 달리기 애니메이션: 초당 12장
+MAX_FRAME_TIME = 0.1  # 창을 끄는 등 루프가 멈췄다 돌아와도 한 번에 크게 건너뛰지 않게
 
 
 # 상태 이벤트 검사 함수: 상태 이벤트는 ('DIR', dir) 모양의 튜플
@@ -96,7 +97,7 @@ class Boy:
 
     def update(self):
         now = get_time()
-        frame_time = now - self.last_update_time  # 지난 프레임부터 흐른 시간(초)
+        frame_time = min(now - self.last_update_time, MAX_FRAME_TIME)  # 지난 프레임부터 흐른 시간(초)
         self.last_update_time = now
         self.state_machine.update(frame_time)
 
