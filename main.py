@@ -25,7 +25,9 @@ reset_world()
 # game loop
 while running:
     handle_events()
+    game_world.update()
     clear_canvas()
+    game_world.render()
     update_canvas()
     delay(0.01)
 # finalization code
