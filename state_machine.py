@@ -1,4 +1,4 @@
-# 상태 머신 모듈: 상태 객체는 enter(e), exit(e), do(), draw() 를 가지고 있어야 한다
+# 상태 머신 모듈: 상태 객체는 enter(e), exit(e), do(frame_time), draw() 를 가지고 있어야 한다
 
 
 class StateMachine:
@@ -17,8 +17,8 @@ class StateMachine:
                 self.cur_state.enter(state_event)
                 return
 
-    def update(self):
-        self.cur_state.do()
+    def update(self, frame_time):
+        self.cur_state.do(frame_time)
 
     def draw(self):
         self.cur_state.draw()

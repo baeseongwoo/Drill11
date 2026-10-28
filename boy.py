@@ -1,6 +1,10 @@
-from pico2d import load_image, SDL_KEYDOWN, SDL_KEYUP, SDLK_LEFT, SDLK_RIGHT
+from pico2d import load_image, get_time, SDL_KEYDOWN, SDL_KEYUP, SDLK_LEFT, SDLK_RIGHT
 
 from state_machine import StateMachine
+
+RUN_SPEED = 300  # 달리기 속도 (px/초)
+IDLE_FPS = 8     # 서 있기 애니메이션: 초당 8장
+RUN_FPS = 12     # 달리기 애니메이션: 초당 12장
 
 
 # 상태 이벤트 검사 함수: 상태 이벤트는 ('DIR', dir) 모양의 튜플
@@ -22,15 +26,15 @@ class Idle:
     def exit(self, e):
         pass
 
-    def do(self):
-        self.boy.frame = (self.boy.frame + 1) % 8
+    def do(self, frame_time):
+        self.boy.frame = (self.boy.frame + IDLE_FPS * frame_time) % 8
 
     def draw(self):
         boy = self.boy
         if boy.face_dir == 1:
-            boy.image.clip_draw(boy.frame * 100, 300, 100, 100, boy.x, boy.y)
+            boy.image.clip_draw(int(boy.frame) * 100, 300, 100, 100, boy.x, boy.y)
         else:
-            boy.image.clip_draw(boy.frame * 100, 200, 100, 100, boy.x, boy.y)
+            boy.image.clip_draw(int(boy.frame) * 100, 200, 100, 100, boy.x, boy.y)
 
 
 class Run:
@@ -44,16 +48,16 @@ class Run:
     def exit(self, e):
         pass
 
-    def do(self):
-        self.boy.frame = (self.boy.frame + 1) % 8
-        self.boy.x += self.boy.dir * 5
+    def do(self, frame_time):
+        self.boy.frame = (self.boy.frame + RUN_FPS * frame_time) % 8
+        self.boy.x += self.boy.dir * RUN_SPEED * frame_time
 
     def draw(self):
         boy = self.boy
         if boy.face_dir == 1:  # 오른쪽 달리기 줄 100, 왼쪽 달리기 줄 0
-            boy.image.clip_draw(boy.frame * 100, 100, 100, 100, boy.x, boy.y)
+            boy.image.clip_draw(int(boy.frame) * 100, 100, 100, 100, boy.x, boy.y)
         else:
-            boy.image.clip_draw(boy.frame * 100, 0, 100, 100, boy.x, boy.y)
+            boy.image.clip_draw(int(boy.frame) * 100, 0, 100, 100, boy.x, boy.y)
 
 
 class Boy:
@@ -68,6 +72,7 @@ class Boy:
         self.right_pressed = False
         if Boy.image == None:
             Boy.image = load_image('animation_sheet.png')
+        self.last_update_time = get_time()
 
         # 상태 객체를 만들고, 상태 머신은 IDLE에서 시작
         self.IDLE = Idle(self)
@@ -90,7 +95,10 @@ class Boy:
             self.state_machine.handle_state_event(('DIR', key_dir))
 
     def update(self):
-        self.state_machine.update()
+        now = get_time()
+        frame_time = now - self.last_update_time  # 지난 프레임부터 흐른 시간(초)
+        self.last_update_time = now
+        self.state_machine.update(frame_time)
 
     def draw(self):
         self.state_machine.draw()
