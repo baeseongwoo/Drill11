@@ -15,7 +15,8 @@ VS Code: 이 폴더(Drill11)를 열고 **Ctrl+F5**.
 
 | 키 | 동작 |
 |---|---|
-| ← / → | 달리기 (벽에 닿으면 바로 반대 방향으로 돌아섬), 떼면 멈춤 |
+| ← / → | 달리기 (벽에 닿으면 그 자리에서 멈춤), 떼면 서 있기 |
+| a | 서 있을 때 누르면 자동 무적 런: 2배 속도·2배 크기로 혼자 좌우 왕복, 5초 뒤 서 있기로 돌아감. 도중에 ← / →를 누르면 그 방향으로 달리기 |
 | ESC | 종료 |
 
 ## 파일
@@ -25,7 +26,7 @@ VS Code: 이 폴더(Drill11)를 열고 **Ctrl+F5**.
 | `main.py` | 게임 루프 |
 | `game_world.py` | 게임 객체 목록 모듈 |
 | `state_machine.py` | `StateMachine` 클래스 |
-| `boy.py` | `Idle`, `Run` 상태 클래스와 `Boy` 클래스 |
+| `boy.py` | `Idle`, `Run`, `AutoRun` 상태 클래스와 `Boy` 클래스 |
 | `grass.py` | `Grass` 클래스 |
 | `animation_sheet.png`, `grass.png` | 이미지 리소스 |
 | `state_diagram.png` | 상태 다이어그램 |
