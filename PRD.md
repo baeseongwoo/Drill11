@@ -2,7 +2,7 @@
 
 ## 1. 개요
 
-LEC12(캐릭터 컨트롤러 1)의 **클래스 변수**, **모듈과 소스 코드 분리**, **상태 머신**을 적용해, 잔디 위의 소년을 좌우 방향키로 달리게 하는 pico2d 프로그램을 만든다. 게임 객체(소년, 잔디)와 상태(IDLE, RUN), 상태 머신, 게임 월드를 각각 **클래스와 모듈**로 나눈다.
+LEC12(캐릭터 컨트롤러 1)의 **클래스 변수**, **모듈과 소스 코드 분리**, **상태 머신**을 적용해, 잔디 위의 소년을 좌우 방향키로 달리게 하는 pico2d 프로그램을 만든다. 게임 객체(소년, 잔디)와 상태(IDLE, RUN, AUTO_RUN), 상태 머신, 게임 월드를 각각 **클래스와 모듈**로 나눈다.
 
 | 항목 | 내용 |
 |---|---|
@@ -18,15 +18,19 @@ LEC12(캐릭터 컨트롤러 1)의 **클래스 변수**, **모듈과 소스 코�
 | ID | 요구사항 | 구현 기준 |
 |---|---|---|
 | R1 | 모듈 분리 | 역할별로 파일을 나누고 `import`해서 사용 (4절) |
-| R2 | 클래스로 구현 | 게임 객체(`Boy`, `Grass`), 상태(`Idle`, `Run`), 상태 머신(`StateMachine`)을 모두 클래스로 만든다 |
+| R2 | 클래스로 구현 | 게임 객체(`Boy`, `Grass`), 상태(`Idle`, `Run`, `AutoRun`), 상태 머신(`StateMachine`)을 모두 클래스로 만든다 |
 | R3 | 리소스 로딩 최적화 | 이미지는 클래스 변수 `image`에 한 번만 로드하고 모든 객체가 공유 |
-| R4 | 상태 머신 | IDLE / RUN 두 상태. 상태 전이는 `StateMachine`의 규칙 테이블로 처리 |
+| R4 | 상태 머신 | IDLE / RUN / AUTO_RUN 세 상태. 상태 전이는 `StateMachine`의 규칙 테이블로 처리 |
 | R5 | IDLE | 처음 상태. 바라보는 방향의 서 있기 애니메이션 반복 |
 | R6 | RUN | ←/→를 누르면 RUN으로 그 방향 달리기, 모두 떼면 IDLE. 좌우를 하나의 RUN 상태로 처리 |
 | R7 | 벽에서 방향 전환 | 화면 좌우 밖으로 나가지 않고, 벽에 닿는 그 프레임에 바로 반대 방향으로 돌아서 계속 달림 |
 | R8 | 종료 | ESC 또는 창 닫기 |
 | R9 | 커밋 로그 | 한 커밋에 한 가지 변경, 모든 커밋은 실행 가능한 상태, 25개 이상 (7절) |
 | R10 | 상태 다이어그램 | 구현한 상태와 전이를 그림으로 만들어 저장소에 포함 |
+| R11 | AUTO_RUN 진입 | IDLE에서 'a' 키를 누르면 AUTO_RUN. 키 조작 없이 바라보던 방향으로 계속 달린다. 반드시 `AutoRun` 상태 클래스로 구현 |
+| R12 | AUTO_RUN 모습 | 속도는 RUN의 2배, 크기도 2배로 확대. 커져도 발은 잔디 위에 붙어 있다 |
+| R13 | AUTO_RUN 벽 전환 | 커진 몸이 화면 밖으로 나가지 않고, 좌우 끝(x 100 / 700)에서 자동으로 방향 전환 |
+| R14 | AUTO_RUN 종료 | 5초 이상 지나면 IDLE로 복귀. 그 전에 방향키를 누르면 무적 런이 취소되고 누른 방향으로 RUN |
 
 범위 밖: SLEEP(잠들기), Dash, 위아래 이동, 충돌 처리.
 
@@ -54,14 +58,14 @@ LEC12(캐릭터 컨트롤러 1)의 **클래스 변수**, **모듈과 소스 코�
 | `main.py` | `handle_events()`, `reset_world()` | 게임 루프. 종료 이벤트 처리, 나머지 이벤트는 소년에게 전달 |
 | `game_world.py` | `world`, `add_object()`, `update()`, `render()` | 게임 객체 목록. 모듈 자체가 하나뿐인 객체(싱글톤)로 쓰인다 |
 | `state_machine.py` | `StateMachine` | 현재 상태를 들고, 규칙 테이블에 따라 상태를 바꾸고, `update`/`draw`를 현재 상태에 맡김 |
-| `boy.py` | `Idle`, `Run`, `Boy` | 상태 클래스와 소년. 소년은 상태 머신을 하나 가진다 |
+| `boy.py` | `Idle`, `Run`, `AutoRun`, `Boy` | 상태 클래스와 소년. 소년은 상태 머신을 하나 가진다 |
 | `grass.py` | `Grass` | 잔디 |
 
 ```
 main.py ──import──▶ game_world.py
    │                    ▲ add_object(grass), add_object(boy)
    ├──import──▶ grass.py   class Grass
-   └──import──▶ boy.py     class Idle, Run, Boy ──import──▶ state_machine.py  class StateMachine
+   └──import──▶ boy.py     class Idle, Run, AutoRun, Boy ──import──▶ state_machine.py  class StateMachine
 ```
 
 - 모든 게임 객체는 `update()`와 `draw()`를 가진다. `game_world`는 객체 종류를 모르고 두 메서드만 호출한다.
@@ -77,6 +81,8 @@ main.py ──import──▶ game_world.py
 
 - `dir = int(right_pressed) - int(left_pressed)` : 1 오른쪽, -1 왼쪽, 0 정지 (두 키를 함께 누르면 0)
 - `dir_on(e)` : `dir != 0` / `dir_off(e)` : `dir == 0`
+- 'a' 키를 누르면 `('A_DOWN', 0)` → `a_down(e)`
+- AUTO_RUN이 5초 지나면 스스로 `('TIME_OUT', 0)`을 보낸다 → `time_out(e)`
 
 ### 5.2 규칙 테이블
 
@@ -84,6 +90,9 @@ main.py ──import──▶ game_world.py
 |---|---|---|
 | IDLE | `dir_on` (←/→ 누름) | RUN |
 | RUN | `dir_off` (키를 모두 뗌, 또는 양쪽 동시) | IDLE |
+| IDLE | `a_down` ('a' 누름) | AUTO_RUN |
+| AUTO_RUN | `time_out` (5초 경과) | IDLE |
+| AUTO_RUN | `dir_on` (←/→ 누름) | RUN (누른 방향) |
 
 ### 5.3 상태별 동작
 
@@ -91,9 +100,11 @@ main.py ──import──▶ game_world.py
 |---|---|---|---|
 | IDLE | `dir = 0` | 프레임 진행 (`IDLE_FPS`) | 바라보는 방향의 서 있기 줄 |
 | RUN | `dir`, `face_dir`를 이벤트의 방향으로 | 프레임 진행 (`RUN_FPS`), `dir` 방향으로 이동, 경계 제한, 벽에 닿으면 `dir`·`face_dir` 반전 | 바라보는 방향의 달리기 줄 |
+| AUTO_RUN | `dir = face_dir`, 시작 시각 기록 | 프레임 진행 (`RUN_FPS`), `AUTO_RUN_SPEED`로 이동, 커진 크기 기준 경계 제한·벽 반전, 5초 지나면 `TIME_OUT` | 달리기 줄을 2배 크기로, 발이 잔디에 닿게 y를 50 올려서 |
 
 - 벽 반전은 상태가 바뀌는 것이 아니라 RUN 안에서 방향만 바뀐다 (다이어그램의 RUN 자기 전이).
 - 벽에서 돌아선 뒤에도 키를 누르고 있는 동안은 계속 달리고(양쪽 벽 사이 왕복), 키를 떼면 IDLE이 된다.
+- AUTO_RUN의 벽 반전도 상태 전이가 아니라 AUTO_RUN 안에서 방향만 바뀐다. RUN에서 'a'를 누르는 것은 무시한다.
 
 ## 6. 상수 (`boy.py`)
 
@@ -102,6 +113,9 @@ main.py ──import──▶ game_world.py
 | `RUN_SPEED` | 300 | 달리기 속도 (px/초) |
 | `HALF_WIDTH` | 50 | 소년 칸의 반폭. x는 50 ~ 750으로 제한 |
 | `IDLE_FPS` / `RUN_FPS` | 8 / 12 | 애니메이션 속도 (프레임/초) |
+| `AUTO_RUN_SPEED` | 600 | 자동 무적 런 속도 (`RUN_SPEED * 2`) |
+| `AUTO_RUN_SCALE` | 2 | 자동 무적 런 크기 배율. 벽 기준도 `HALF_WIDTH * 2` = 100 |
+| `AUTO_RUN_TIME` | 5.0 | 자동 무적 런 지속 시간 (초) |
 | `MAX_FRAME_TIME` | 0.1 | 루프가 잠깐 멈췄다 돌아와도 한 번에 크게 건너뛰지 않도록 한 프레임 시간의 상한 |
 
 ## 7. 개발 단계와 커밋
@@ -139,6 +153,8 @@ main.py ──import──▶ game_world.py
 | | 27 | VS Code 실행 설정 |
 | | 28 | README.md |
 | | 29 | PRD.md에 검증 결과 반영 |
+| AUTO_RUN | 30 | AutoRun 상태 추가: 'a'로 진입, 5초 후 IDLE, 방향키로 RUN |
+| | 31 | PRD.md에 AUTO_RUN 반영 |
 
 ## 8. 검증 방법
 
@@ -152,6 +168,9 @@ main.py ──import──▶ game_world.py
 | 벽에서 돌아선 뒤 키를 뗌 | IDLE, 마지막으로 보던 방향 유지 | Idle, face=-1 |
 | →와 ←를 함께 누름 | IDLE (dir 0) | Idle |
 | 그 상태에서 →를 뗌 | ← 방향 RUN | Run, face=-1 dir=-1 |
+| IDLE에서 'a' | AUTO_RUN, 바라보던 방향으로 2배 속도 | AutoRun |
+| AUTO_RUN 유지 | 오른쪽 벽(x 700)에서 돌아섬, 5초 후 IDLE | 최대 x=700.0, 5.01초 → Idle |
+| AUTO_RUN 중 ← | ← 방향 RUN | Run, dir=-1 |
 | ESC | 종료 | 정상 종료 |
 
 ## 9. 완료 기준
@@ -160,9 +179,12 @@ main.py ──import──▶ game_world.py
 
 - [x] 소스가 `main.py` / `game_world.py` / `state_machine.py` / `boy.py` / `grass.py` 다섯 모듈로 나뉜다.
 - [x] `Boy`, `Grass`, `Idle`, `Run`, `StateMachine`이 모두 클래스이고, 이미지는 클래스 변수로 한 번만 로드된다.
-- [x] IDLE / RUN 전이가 5.2절 규칙 테이블대로 동작한다.
+- [x] IDLE / RUN / AUTO_RUN 전이가 5.2절 규칙 테이블대로 동작한다.
+- [x] AUTO_RUN은 `AutoRun` 클래스이고, 2배 속도로 달리다 좌우 끝(x 100 / 700)에서 방향을 바꾼다.
 - [x] 좌우 벽(x 50 / 750)에 닿는 프레임에 반대 방향으로 돌아선다.
 - [x] 커밋이 25개 이상이고, 각 커밋이 실행 가능하다.
 - [x] 상태 다이어그램 `state_diagram.png`가 저장소에 있다.
 - [ ] 서 있기 / 달리기 애니메이션이 화면에서 자연스럽게 보인다.
+- [ ] AUTO_RUN에서 2배로 커진 소년이 잔디 위에 제대로 서서 보인다.
+- [ ] `state_diagram.png`에 AUTO_RUN과 전이 세 개를 추가한다.
 - [ ] VS Code에서 Ctrl+F5로 실행된다.
