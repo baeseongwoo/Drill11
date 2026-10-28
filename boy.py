@@ -93,7 +93,8 @@ class AutoRun:
         # 커진 크기만큼 벽 기준을 넓혀서, 벽에 닿으면 반대 방향으로 전환
         half_width = HALF_WIDTH * AUTO_RUN_SCALE
         boy.x = max(half_width, min(boy.x, get_canvas_width() - half_width))
-        if (boy.x <= half_width and boy.dir == -1) or                 (boy.x >= get_canvas_width() - half_width and boy.dir == 1):
+        if (boy.x <= half_width and boy.dir == -1) or \
+                (boy.x >= get_canvas_width() - half_width and boy.dir == 1):
             boy.dir = -boy.dir
             boy.face_dir = boy.dir
 
