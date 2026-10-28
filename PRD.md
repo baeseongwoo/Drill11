@@ -158,22 +158,26 @@ main.py ──import──▶ game_world.py
 | | 33 | PRD.md에 RUN 벽 동작 변경 반영 |
 | 다이어그램 | 34 | 상태 다이어그램 갱신: AUTO_RUN 상태와 전이 추가, RUN 벽 반전 제거 |
 | | 35 | PRD.md에 다이어그램 갱신 반영 |
+| 점검 | 36 | AutoRun 벽 검사 조건 줄 정리 |
+| | 37 | README.md 조작법 갱신 |
+| | 38 | PRD.md 검증 결과·완료 기준 재점검 반영 |
 
 ## 8. 검증 방법
 
-`get_events()`를 가짜 키 입력으로 바꾼 스크립트로 `main.py`를 실행해 소년의 상태와 좌표를 확인한다 (스크립트는 저장소에 넣지 않는다). 각 커밋도 같은 스크립트로 오류 없이 실행·종료되는지 확인한 뒤 커밋한다.
+pico2d를 가짜 모듈로 바꾸고(`get_events()`는 정해진 시각에 가짜 키 입력, `get_time()`은 프레임마다 0.01초씩 증가) `main.py`를 실행해 소년의 상태와 좌표를 확인한다 (스크립트는 저장소에 넣지 않는다). 각 커밋도 같은 스크립트로 오류 없이 실행·종료되는지 확인한 뒤 커밋한다.
 
 | 시나리오 | 기대 결과 | 최종 커밋 실행 결과 |
 |---|---|---|
-| 아무 입력 없음 | IDLE, x 400 | Idle, x=400.0 |
+| 아무 입력 없음 | IDLE, x 400 | Idle, x=400 |
 | →를 4초 누름 | 오른쪽 벽(x 750)에서 멈춤, 방향 유지 | Run, x=750 dir=1 face=1 |
 | ←를 4초 누름 | 왼쪽 벽(x 50)에서 멈춤, 방향 유지 | Run, x=50 dir=-1 face=-1 |
-| 벽에서 키를 뗌 | IDLE, 벽 쪽을 바라봄 | Idle, face=1 (→) / face=-1 (←) |
-| →와 ←를 함께 누름 | IDLE (dir 0) | Idle |
-| 그 상태에서 →를 뗌 | ← 방향 RUN | Run, face=-1 dir=-1 |
-| IDLE에서 'a' | AUTO_RUN, 바라보던 방향으로 2배 속도 | AutoRun |
-| AUTO_RUN 유지 | 오른쪽 벽(x 700)에서 돌아섬, 5초 후 IDLE | 최대 x=700.0, 5.01초 → Idle |
-| AUTO_RUN 중 ← | ← 방향 RUN | Run, dir=-1 |
+| 벽에서 키를 뗌 | IDLE, 벽 쪽을 바라봄 | Idle, x=750 face=1 (→) / x=50 face=-1 (←) |
+| →와 ←를 함께 누름 | IDLE (dir 0) | Idle, dir=0 |
+| 그 상태에서 →를 뗌 | ← 방향 RUN | Run, dir=-1 face=-1 |
+| IDLE에서 'a', 1초 뒤 | AUTO_RUN, 2배 크기, 오른쪽 끝(x 700)에서 돌아와 왼쪽으로 | AutoRun, x=400 dir=-1, 그림 200x200 y=140 |
+| IDLE에서 'a', 6초 뒤 | 5초에 IDLE로 복귀, 원래 크기 | Idle, 그림 100x100 y=90 |
+| AUTO_RUN 중 ← | 무적 런 취소, ← 방향 RUN, 원래 크기 | Run, dir=-1 face=-1, 그림 100x100 |
+| RUN 중 'a' | 무시, 계속 RUN | Run, dir=1 |
 | ESC | 종료 | 정상 종료 |
 
 ## 9. 완료 기준
@@ -181,7 +185,7 @@ main.py ──import──▶ game_world.py
 스크립트로 확인한 항목은 체크했다. 체크하지 않은 항목은 화면을 직접 보고 확인할 부분이다.
 
 - [x] 소스가 `main.py` / `game_world.py` / `state_machine.py` / `boy.py` / `grass.py` 다섯 모듈로 나뉜다.
-- [x] `Boy`, `Grass`, `Idle`, `Run`, `StateMachine`이 모두 클래스이고, 이미지는 클래스 변수로 한 번만 로드된다.
+- [x] `Boy`, `Grass`, `Idle`, `Run`, `AutoRun`, `StateMachine`이 모두 클래스이고, 이미지는 클래스 변수로 한 번만 로드된다.
 - [x] IDLE / RUN / AUTO_RUN 전이가 5.2절 규칙 테이블대로 동작한다.
 - [x] AUTO_RUN은 `AutoRun` 클래스이고, 2배 속도로 달리다 좌우 끝(x 100 / 700)에서 방향을 바꾼다.
 - [x] RUN에서 방향키를 계속 눌러도 좌우 벽(x 50 / 750)에서 멈추고 방향을 바꾸지 않는다.
